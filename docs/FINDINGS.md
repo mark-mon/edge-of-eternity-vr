@@ -103,6 +103,12 @@ During loading RawCam_v2 renders 640x360 into 'Source Input Texture'.
   (oscillating head yaw on a still headset) with DLSS: sharp, no doubling. Game TAA path not re-tested (PPv2 TAA
   via game_aa = taa made no projection calls; the game's own TAA option is to be checked by the user).
 
+## Release 1.0.0 (2026-10-29)
+- Version 1.0.0 = build 12 + version string. Code and notes on GitHub: https://github.com/mark-mon/edge-of-eternity-vr
+  (main; agent scripts not included). Release files in builds\v1.0.0 (version.dll, zip with README, release notes).
+- The Claude session cannot push tags or create GitHub releases (proxy/API policy): the user creates the v1.0.0
+  release on GitHub and attaches the files.
+
 ## Build 08: the game's DLSS, FSR and TAA kept off in VR (user decision after build 07)
 - User test build 07: with the eye projection fixed, per-eye DLSS showed a cross-eyed, tiny world (like world scale
   15), and DLSS at Performance was SLOWER than DLSS off. Decision: ignore the game's upscalers in VR.
