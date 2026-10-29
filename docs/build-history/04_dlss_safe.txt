@@ -1,0 +1,16 @@
+Edge of Eternity VR - stage build 04: build 03 + works with the game's DLSS setting on (2026-10-28, test 023) - CURRENT
+
+Install: copy version.dll next to EdgeOfEternity.exe (delete it to uninstall). Delete an old config.txt to get the
+current keys (a commented config.txt and eoevr.log are written in the game folder). SteamVR must be running.
+
+- Native per-eye stereo, head tracking (F9 recenter), level horizon (level_camera = 1, View page of the menu).
+- HUD on its own panel (F10 on/off). Loading screens on a larger panel.
+- Settings menu: hold L3+R3 or press Insert. Pages View / Display / HUD / Debug. Changes save to config.txt.
+- Resolution: Display > Resolution (70 / 85 / 100 / 120 / 140 % of SteamVR's recommended size, or Custom).
+- Monitor shows the left eye; the game's own flat render is skipped (faster).
+- The game's DLSS is switched off while VR runs (it is built for one window and broke stereo). DLSS for VR is being
+  worked on separately. Eyes render at full headset resolution - use the Resolution presets for performance.
+
+Please look at: comfort / world scale (View > World scale), level horizon on/off, HUD distance/size/height,
+grass at the edges of the view, battles and cutscenes, the gamepad (game + menu), fps at your resolution.
+F11 saves the headset images (eoevr_dump_*.bmp) if something looks wrong; eoevr.log has the details.

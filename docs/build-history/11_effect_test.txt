@@ -1,0 +1,15 @@
+Edge of Eternity VR - stage build 11: effect test for the swaying distant shadows
+(2026-10-29, not run on the test PC - first test by the user) - CURRENT
+
+Install: copy version.dll next to EdgeOfEternity.exe. Your config.txt can stay.
+
+- Build 10's "Shadow stability" option is removed: the game already uses Unity's Stable Fit shadows (log), so the
+  cascade fit is not the cause.
+- NEW, settings menu > Debug > "Switch off effect": keeps ONE of the game's camera effects off, live. Look at the
+  swaying shadows on distant rocks / vegetation and step through the list (none, HBAO, AmplifyOcclusionEffect, NNAO,
+  SSRT, SEScreenSpaceShadows, NGSS_FrustumShadows, SSR2, fogs, volumetrics, PostProcessLayer, ...). The one that makes
+  the sway stop is the culprit - tell me which, then it can be fixed properly (most likely an ambient occlusion effect
+  that computes its frustum from the game's own field of view instead of the eye's).
+- eoevr.log lists the camera effects that are currently disabled by the game settings, and every switch
+  ("effect test: X switched off" / "already off (game setting) - not the cause").
+- Put it back to "none" when done (it is saved in config.txt as debug_effect_off).

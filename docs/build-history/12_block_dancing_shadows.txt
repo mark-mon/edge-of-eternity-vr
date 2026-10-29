@@ -1,0 +1,13 @@
+Edge of Eternity VR - stage build 12: "Block Dancing Shadows" option
+(2026-10-29, not run on the test PC - first test by the user) - CURRENT
+
+Install: copy version.dll next to EdgeOfEternity.exe. Your config.txt can stay (a missing block_dancing_shadows
+means on). If you set Debug > Switch off effect earlier, set it back to "none".
+
+- Settings menu > Display > "Block Dancing Shadows" (default ON, live): switches off the game's screen-space contact
+  shadows (NGSS_FrustumShadows), which made distant shadows on rocks and vegetation sway with head motion (found with
+  build 11's effect test). OFF gives the game's slightly richer look back, with the dancing shadows.
+  config.txt: block_dancing_shadows = 1.
+- Debug > Switch off effect stays available for finding other effects (default "none"; config.txt debug_effect_off).
+- Possible later: a real fix that keeps these shadows (their temporal mode probably mixes the two eye renders);
+  needs the test PC.

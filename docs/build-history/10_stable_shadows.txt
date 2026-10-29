@@ -1,0 +1,17 @@
+Edge of Eternity VR - stage build 10: stable shadows (distant shadows no longer swim with head motion)
+(2026-10-29, not run on the test PC - first test by the user) - CURRENT
+
+Install: copy version.dll next to EdgeOfEternity.exe. Your config.txt can stay (a missing shadow_fit means stable);
+delete it to get the commented version.
+
+What's new in 10
+- User report: distant shadows on rocks / vegetation sway as the head moves left/right, the same in both eyes;
+  the game's screen-space shadows option made no difference.
+- Likely cause: Unity refits the sun's shadow cascades to every camera view. In "Close Fit" mode the distant
+  cascade texels move with every head movement. The mod now sets Unity's "Stable Fit" (snapped, rotation-stable
+  cascades). Settings menu > Display > "Shadow stability": Stable / Close fit / Game - applied live, so you can
+  flip it while looking at the rocks. config.txt: shadow_fit = stable | close | keep.
+- eoevr.log: "stereo: game shadows: projection ..., cascades ..., distance ..." and "shadow projection X -> Y".
+  If the log says the game already used StableFit, this is not the cause - send the log and I'll look further.
+
+Everything else as build 09.

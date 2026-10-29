@@ -1,0 +1,42 @@
+Edge of Eternity VR - stage build 05: per-eye DLSS + foveated rendering (VRS, eye tracked) + gamepad menu fix
+(2026-10-28, tests 025-028) - CURRENT
+
+Install: copy version.dll next to EdgeOfEternity.exe (delete it to uninstall). Delete your old config.txt so the new
+keys are written (a commented config.txt and eoevr.log appear in the game folder). SteamVR must be running.
+
+BEFORE YOU PLAY - game settings (Options > Graphics)
+  * Anti-aliasing must NOT be TAA. The game's TAA makes the image double and stick to the headset.
+    Off, FXAA or DLSS all work. Recommended: DLSS on.
+  * DLSS: turn it on in the game's graphics options and pick the quality there (Quality / Balanced / Performance /
+    Ultra Performance). The mod now runs the game's DLSS once per eye, upscaling to the full headset resolution.
+  * DLSS 4: the game loads nvngx_dlss.dll from EdgeOfEternity_Data\Plugins\x86_64\ (not the game root).
+    Put the newer DLL there (DLSS Swapper does this; check that folder if it was swapped elsewhere).
+
+What's new in 05
+- DLSS per eye (dlss_in_vr = 1): each eye renders at the DLSS input size and is upscaled to the headset size.
+  Test PC (2244x2352 per eye, Balanced): eyes render at 1496x1568, gpu stereo 10.5 ms vs 14.1 ms without DLSS.
+  dlss_in_vr = 0 brings back build 04 behaviour (DLSS switched off in VR, native resolution).
+- Foveated rendering (NVIDIA VRS, RTX/GTX 16xx and newer): Display page of the menu or config.txt
+    foveation = off / fixed / eye     eye = follows your eyes on headsets with eye tracking
+                                      (OpenXR XR_EXT_eye_gaze_interaction, e.g. Quest Pro, Varjo, Pimax Crystal);
+                                      falls back to fixed when there is no gaze.
+    foveation_strength = low / medium / high
+    foveation_inner / foveation_outer = ring radii (full rate inside inner, lowest rate outside outer)
+  eoevr.log shows "xr: eye tracking supported / not available" and a "vrs:" line every 10 s.
+- Settings menu with the gamepad in game: the mod now reads the pad through its own private copy of XInput
+  (%TEMP%\vrkit_xinput1_4.dll), so Steam Input no longer hides it. Hold L3+R3 to open the menu.
+  eoevr.log says where the pad was found ("pad found on user N via private xinput1_4 copy / game xinput").
+  Xbox-type pads (or pads Steam presents as Xbox) only.
+
+Everything from build 04 still applies: native per-eye stereo, F9 recenter, F10 HUD on/off, Insert or L3+R3 for the
+menu (View / Display / HUD / Debug), F11 saves headset images, monitor shows the left eye.
+
+Please look at
+- DLSS in motion: any shimmer, ghosting or differences between the two eyes (both eyes share one DLSS history).
+  Try different DLSS qualities in the game's settings.
+- Foveation with your eye tracking: is the sharp area where you look, can you notice the edges at medium/high.
+- The pad in the settings menu once in game (and that the game itself still reacts to the pad normally).
+- fps compared to build 04.
+
+Test PC numbers (Ultra = 3142x3292 per eye, DLSS Balanced): no DLSS 41 fps (gpu 21.4 ms) -> DLSS per eye 54 fps
+(15.9 ms) -> DLSS + fixed foveation 60 fps capped (13.4 ms).

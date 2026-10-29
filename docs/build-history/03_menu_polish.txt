@@ -1,0 +1,19 @@
+Edge of Eternity VR - stage build 03: build 02 + menu polish (2026-10-28, test 015) - CURRENT
+
+Install: copy version.dll next to EdgeOfEternity.exe (delete it to uninstall). A commented config.txt and eoevr.log
+are written in the game folder. SteamVR / any OpenXR runtime must be running. Delete an old config.txt to get new keys.
+
+Verified on the test PC (SteamVR null headset 2244x2352 per eye, 60 Hz, RTX 3080 Ti):
+- Native per-eye stereo of the game camera (RawCam_v2) + its 3D-UI overlay camera, head tracking, level horizon,
+  F9 recenter.
+- Grass / vegetation in both eyes (draw_replay = 1).
+- HUD on its own panel with clean transparency (F10 on/off); loading screens on the larger menu panel.
+- Monitor shows the left eye (desktop_view = eye): the game's own full render is skipped -> 60 fps locked
+  (was ~50 fps with desktop_view = game).
+- No exceptions in Player.log, walking / game logic normal.
+- Settings menu: hold L3+R3 or press Insert.
+To check in the headset: scale / comfort (world_scale, level_camera), HUD placement, grass at the edges of the view,
+combat camera, cutscenes, performance at the Dream Air resolution (render_preset).
+
+Changes since 02: menu Display page has "Monitor view" (headset eye / game view, live), "Grass in both eyes",
+"Anti-aliasing"; HUD page has "Clean HUD edges". Menu open/close logged. Verified in test 015.

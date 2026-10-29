@@ -1,0 +1,22 @@
+Edge of Eternity VR - stage build 08: the game's DLSS, FSR and TAA are switched off in VR
+(2026-10-29, not run on the test PC - first test by the user) - CURRENT
+
+Install: copy version.dll next to EdgeOfEternity.exe (delete it to uninstall). DELETE YOUR OLD config.txt so the new
+keys are written (a commented config.txt and eoevr.log appear in the game folder). SteamVR must be running.
+
+What's new in 08
+- The game's DLSS, FSR (AMD_CAS) and TAA (TAA2 / CTAA_PC) settings are ignored while VR runs: the mod keeps those
+  camera components off, gives the camera its normal target back and switches their helper cameras off. Whatever is
+  picked in the game's graphics options, VR renders like build 04 with DLSS off: full eye resolution with the mod's
+  anti-aliasing (game_aa = smaa). config.txt: vr_disable_components = DLSS,AMD_CAS,TAA2,CTAA_PC.
+  eoevr.log: "stereo: kept off in VR: ..." and "game's AMD_CAS switched off for VR" etc.
+- Per-eye DLSS (builds 05-07) is off by default: it was not right in the headset (wrong scale / stereo) and gave no
+  speed gain in this game. dlss_in_vr = 1 brings it back for experiments only.
+- For performance: Display > Resolution presets and Display > Foveated rendering (eye tracked).
+- Kept from 05-07: eye-tracked foveation, pad in the settings menu (L3+R3), status (Y) menu / pause / options /
+  full map on the game-menu panel (HUD page: Game menu distance / width), the camera matrix hooks of build 07.
+
+Please check
+- With the game's DLSS on, then FSR, then TAA: the image should be the same as with them off (no black image, no
+  doubling, no swaying). If one of them still misbehaves, send eoevr.log.
+- The status (Y) menu on the game-menu panel.

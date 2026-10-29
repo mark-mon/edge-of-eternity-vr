@@ -1,0 +1,39 @@
+Development notes from the porting work (the test-PC agent scripts mentioned below are not part of this repository).
+
+EDGE OF ETERNITY VR - project handoff (D:\vrconversions\edgeofeternity)
+=========================================================================
+Read this first in a new chat, then eoevr\FINDINGS.md.
+
+Game:   D:\SteamLibrary\steamapps\common\Edge Of Eternity\EdgeOfEternity.exe, Steam app 269190,
+        Unity 2021.3.27f1 IL2CPP x64, D3D11, built-in pipeline + Post Processing v2.
+Mod:    version.dll proxy (copy next to EdgeOfEternity.exe). config.txt + eoevr.log in the game folder.
+Base:   NEO VR (D:\vrconversions\neovr) IL2CPP engine layer + ONINAKI VR's xrout (HUD matte).
+
+Folders
+  agent.cmd                 starts the test agent (leave the window open)
+  agent\agent.ps1           watcher: runs agent\inbox\NNN_name.cmd.ps1, output in agent\outbox
+  agent\tools\eoe.ps1       helpers: Stop-EOE, Install-EOEMod, Set-EOEConfig, Start-EOE (Steam), Focus-EOE,
+                            Send-EOEKey / Send-EOEVKey, Hold-EOEKey, Save-EOEShot (skips a hung window),
+                            Invoke-EOEDump <name> (F11 headset images), Save-EOELog, Save-UnityLogs (Player.log)
+  agent\captures\NNN\       logs, screenshots, eye/HUD dumps per test
+  eoevr\                    mod source; eoevr\dist\version.dll = current build (Install-EOEMod copies it)
+  builds\<stage>\           saved stage builds with README.txt
+  eoevr_src_<ver>.tgz       source snapshots (build in Claude's container: TC=/home/claude/tc ./build.sh after
+                            tools/setup_toolchain.sh <sharedtools\toolchain64bit.zip>)
+
+Test notes
+  - Steam launch works: Start-EOE -WaitSec 120. The save loads straight into gameplay (~50 s), no keys needed.
+  - SteamVR null headset is configured on the test PC (2244x2352).
+  - Eye dumps: F11 -> eoevr_dump_<id>_left/right/hud/hudwhite.bmp; analyse with eoevr/tools/eyes.py.
+  - Type dump: dump_types = 1 -> eoevr_types.txt (all classes, fields with offsets, methods with RVAs).
+  - The mod has a watchdog: if the main thread stalls for 4 s, main + render thread stacks go to eoevr.log.
+
+Player setup (also in builds\<stage>\README.txt)
+  - The game's DLSS, FSR and TAA options are ignored in VR (the mod keeps them off: vr_disable_components).
+    Per-eye DLSS (dlss_in_vr = 1) is experimental and not right. Performance: resolution presets + foveation.
+  - Foveated rendering (NVIDIA VRS): foveation = off / fixed / eye (eye tracking via XR_EXT_eye_gaze_interaction).
+    Defaults (user's tested config, build 09): foveation = fixed, foveation_strength = high.
+  - Gamepad in the settings menu: private copy %TEMP%\vrkit_xinput1_4.dll bypasses Steam Input (Xbox-type pads).
+  - Block Dancing Shadows (default on): NGSS_FrustumShadows kept off - its shadows sway with head motion in VR.
+  - Game menus (status/Y menu, pause/options, full map) on the game-menu panel (menu_panel, menu_canvases).
+  - The test PC may be lent to other projects: ask the user before running the game there.

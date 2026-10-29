@@ -1,0 +1,13 @@
+Edge of Eternity VR - stage build 01: first native stereo (2026-10-28, test 005)
+
+Install: copy version.dll next to EdgeOfEternity.exe (delete it to uninstall). A commented config.txt and
+eoevr.log are written in the game folder. SteamVR / any OpenXR runtime must be running.
+
+What works (verified on the test PC with the SteamVR null headset, 2244x2352 per eye):
+- Native per-eye stereo (the game camera RawCam_v2 rendered once per eye with the headset pose/FOV), head tracking,
+  level horizon (level_camera = 1), F9 recenter.
+- HUD on its own panel (the game's overlay canvases moved to a HUD camera, black/white matte for transparency).
+  F10 HUD on/off. Loading screen shown on the larger menu panel.
+- In-headset settings menu: hold L3+R3 or press Insert.
+- ~50 fps game / 60 fps headset on an RTX 3080 Ti.
+Known issue in this build: the tall grass (GPU Instancer) appears only in the left eye (fixed in later builds).

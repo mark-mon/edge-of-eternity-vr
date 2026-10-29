@@ -1,0 +1,29 @@
+Edge of Eternity VR - stage build 06: DLSS fixed (one history per eye) + game menus on the menu panel
+(2026-10-29, tests 029-031) - CURRENT
+
+Install: copy version.dll next to EdgeOfEternity.exe (delete it to uninstall). Delete your old config.txt so the new
+keys are written (a commented config.txt and eoevr.log appear in the game folder). SteamVR must be running.
+
+BEFORE YOU PLAY - game settings (Options > Graphics)
+  * Anti-aliasing must NOT be TAA (the image doubles and sticks to the headset). Off, FXAA or DLSS work.
+  * Do NOT use the game's FSR upscaler: it gives a black image in VR. Use DLSS (or no upscaler).
+  * DLSS: turn it on in the game's graphics options and pick the quality there. The mod runs it per eye.
+    The game loads nvngx_dlss.dll from EdgeOfEternity_Data\Plugins\x86_64\ (put DLSS 4 there, not in the game root).
+
+What's new in 06
+- DLSS: each eye now has its own DLSS history (dlss_eye_history = 1). In build 05 both eyes shared one, so each eye
+  was blended with the other eye's previous frame: doubled characters, eyes not lining up. The mod creates a second
+  DLSS feature inside the game's DLSS plugin and gives it to the right eye. eoevr.log: "dlss eyes: separate
+  histories ... evaluations left N right N" every 10 s.
+- Game menus: the status menu (gamepad Y / keyboard I) was drawn by the game's UI camera at full headset view, too
+  close and too big. It is now on the HUD image, shown on the game-menu panel: HUD page of the settings menu,
+  "Game menu distance" and "Game menu width". The pause/options menus and the full map use that panel too.
+  "Game menus on the menu panel" (menu_panel = 0) puts them back on the HUD panel.
+  The game itself turns its camera to a bright sky backdrop while the status menu is open.
+
+Everything from build 05 still applies (eye-tracked foveation, pad in the settings menu via L3+R3, F9 recenter,
+F10 HUD, F11 headset images).
+
+Please look at
+- DLSS in motion: characters single and sharp, both eyes lining up. Try different DLSS qualities.
+- The status menu (Y) size/distance with the Game menu sliders; the pause menu and map on the same panel.

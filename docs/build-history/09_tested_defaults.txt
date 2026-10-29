@@ -1,0 +1,12 @@
+Edge of Eternity VR - stage build 09: build 08 with the user's tested settings as defaults
+(2026-10-29) - CURRENT
+
+Install: copy version.dll next to EdgeOfEternity.exe (delete it to uninstall). Delete an old config.txt to get these
+defaults written (a commented config.txt and eoevr.log appear in the game folder). SteamVR must be running.
+
+Same as build 08 (user-tested: everything works), with new defaults:
+- foveation = fixed (was eye)            Display > Foveated rendering; "eye" follows your gaze on eye-tracked headsets
+- foveation_strength = high (was medium)
+All other defaults were already the tested config: render_preset native, game_aa smaa, game DLSS/FSR/TAA kept off in
+VR (vr_disable_components = DLSS,AMD_CAS,TAA2,CTAA_PC), dlss_in_vr 0, desktop_view eye, HUD 1.6 m / 1.6 m,
+game menus on the menu panel 2.0 m / 2.4 m.
