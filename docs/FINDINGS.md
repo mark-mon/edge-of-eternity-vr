@@ -103,6 +103,18 @@ During loading RawCam_v2 renders 640x360 into 'Source Input Texture'.
   (oscillating head yaw on a still headset) with DLSS: sharp, no doubling. Game TAA path not re-tested (PPv2 TAA
   via game_aa = taa made no projection calls; the game's own TAA option is to be checked by the user).
 
+## Open (after 1.0.0): HxVolumetricCamera shows a bright fog rectangle at some spots
+- User report (2026-11-25, Ex.: a meadow with blue grass and a stone platform): a bright, foggy rectangle in the
+  middle of the view, the same region in both eyes (world-consistent depth, characters in front, only the distant
+  background fogged). Debug > Switch off effect: HxVolumetricCamera makes it vanish. Log: 90 fps, no errors;
+  HxVolumetricCamera enabled there (with GlobalFog, Enviro sky/post-processing).
+- HxVolumetricCamera (Hx Volumetric Lighting): temporal (TemporalSampling, TemporalTexture, LastMatrixVP /
+  LastMatrixVPInv, MatrixVP), own view/projection fields (CurrentView/Proj/Invers + *2 for single-pass stereo,
+  IsRenderBoth), MyPreCull(cam), static CameraPlanes, ProjectorShader / OrthoProjectorMesh. Suspects: a frustum or
+  projector built from the game's field of view (covers only a central rectangle of the wider eye view) and/or the
+  temporal history shared by both eye renders.
+- User decision: no block toggle; do a real fix on the test PC (needs a save at that spot; debug_head_sway helps).
+
 ## Release 1.0.0 (2026-10-29)
 - Version 1.0.0 = build 12 + version string. Code and notes on GitHub: https://github.com/mark-mon/edge-of-eternity-vr
   (main; agent scripts not included). Release files in builds\v1.0.0 (version.dll, zip with README, release notes).
