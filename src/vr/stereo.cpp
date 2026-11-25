@@ -54,6 +54,7 @@ struct Cfg {
     std::string foveationStrengthStr = "high";
     float foveationInner = 0.40f, foveationOuter = 0.70f;
     bool fakeGaze = false;
+    bool hxEyeQuad = true;            // HxVolumetricCamera: its full-screen near-plane quad from the eye frustum
     bool blockDancingShadows = true;  // keep NGSS_FrustumShadows off (its screen-space shadows dance with head motion)
     std::string effectOff = "none";   // debug: one world-camera effect kept off (to find what makes distant shadows sway)
     float headSway = 0;               // debug: oscillating head yaw (degrees) to test temporal effects on a still headset
@@ -125,6 +126,9 @@ bool g_inOwnRender = false;
 Object* g_curCam = nullptr;      // camera being rendered for an eye right now (projection hooks)
 Matrix4x4 g_curProj{}, g_curView{};
 float g_curTan[4] = {};          // eye frustum tangents: left, right, up, down
+Vec3 g_curEyePos{};
+Quat g_curEyeRot{0, 0, 0, 1};
+uint32_t s_hxQuads = 0;
 uint32_t s_viewIntercepts = 0, s_extents = 0;
 bool g_hudVisible = true;
 DWORD g_lastScan = 0;
@@ -851,6 +855,7 @@ void RenderEye(Object* cam, int eye, const Vec3& gp, const Quat& gr, const xrout
     Vec3 pos{gp.x + off.x, gp.y + off.y, gp.z + off.z};
     Quat rot = QMul(gr, hr);
     Matrix4x4 view = ViewMatrix(pos, rot);
+    g_curEyePos = pos; g_curEyeRot = rot;
     g_curProj = ProjMatrix(fov, n, f);
     g_curView = view;
     g_curTan[0] = tanf(fov.left); g_curTan[1] = tanf(fov.right); g_curTan[2] = tanf(fov.up); g_curTan[3] = tanf(fov.down);
@@ -948,6 +953,8 @@ void Report() {
     LOGI("dlss: %s | per-eye evaluations %u | camera matrix intercepts: projection %u view %u, eye extents %u", DlssState().c_str(),
          s_dlssEyes, s_projIntercepts, s_viewIntercepts, s_extents);
     s_viewIntercepts = 0; s_extents = 0;
+    LOGI("volumetrics: eye quads %u (%s)", s_hxQuads, C.hxEyeQuad ? "on" : "off");
+    s_hxQuads = 0;
     { auto e = dlsseyes::Take();
       LOGI("dlss eyes: %s, features created %u (+%u right eye), evaluations left %u right %u unpaired %u, released %u%s",
            C.dlssEyeHistory ? "separate histories" : "shared history", e.created, e.createdSecond, e.evalLeft, e.evalRight,
@@ -1016,6 +1023,9 @@ void RegisterMenuOptions() {
                            "How much the periphery is reduced (low 2x1 / 2x2, medium 2x2 / 4x2, high 2x2 / 4x4).",
                            [] { ApplyFoveation(); });
     fs.choiceLabels = {"Low", "Medium", "High"};
+    o.AddBool("Display", "volumetrics_eye_quad", "Fix volumetric light", &C.hxEyeQuad,
+              "The game's volumetric light / haze is drawn over each eye's full view. Off: the game's own version "
+              "(a bright rectangle at some places).");
     o.AddBool("Display", "block_dancing_shadows", "Block Dancing Shadows", &C.blockDancingShadows,
               "Switches off the game's screen-space contact shadows (NGSS frustum shadows), which sway with head motion. "
               "Off: the game's look, with dancing distant shadows.");
@@ -1094,6 +1104,7 @@ bool Init(const Config& cfg, const std::wstring& gameDir) {
     C.headSway = cfg.GetFloat("debug_head_sway", 0);
     C.effectOff = cfg.GetStr("debug_effect_off", "none");
     C.blockDancingShadows = cfg.GetBool("block_dancing_shadows", true);
+    C.hxEyeQuad = cfg.GetBool("volumetrics_eye_quad", true);
     ApplyFoveation();
     C.gpuiMode = cfg.GetInt("gpui_mode", 1);
     C.debugKeys = cfg.GetBool("debug_keys", false);
@@ -1174,6 +1185,28 @@ bool OnSetProjection(Object* cam, const Matrix4x4* m) {
         if (oCur > 0) DField<Matrix4x4>(d, oCur) = p;
     }
     s_projIntercepts++;
+    return true;
+}
+
+// HxVolumetricCamera.BuildBuffer (run from its OnPreCull, i.e. for every eye render) builds the world matrix of a
+// full-screen quad (mesh vertices (+-1, +-1, 1)) on the camera's near plane:
+//   BlitMatrix = TRS(camera.transform.position, camera.transform.rotation, (tan(fov/2)*n*aspect, tan(fov/2)*n, n))
+// from the GAME camera's transform and symmetric field of view. In VR that quad covered only a central rectangle of
+// each eye, fixed where the game camera looks (bright fog rectangle, user report 2026-11-25). For an eye render the
+// mod returns the eye's quad instead: eye pose, off-centre eye frustum at the same distance n.
+bool HxBlitMatrix(const float scale[3], Matrix4x4* out) {
+    if (!C.hxEyeQuad || !g_curCam) return false;
+    float n = scale[2];
+    float l = g_curTan[0], r = g_curTan[1], u = g_curTan[2], d = g_curTan[3];
+    float hx = (r - l) * 0.5f * n, cx = (r + l) * 0.5f * n, hy = (u - d) * 0.5f * n, cy = (u + d) * 0.5f * n;
+    Vec3 R = QRot(g_curEyeRot, {1, 0, 0}), U = QRot(g_curEyeRot, {0, 1, 0}), F = QRot(g_curEyeRot, {0, 0, 1});
+    Matrix4x4 m{};
+    m.at(0, 0) = R.x * hx; m.at(1, 0) = R.y * hx; m.at(2, 0) = R.z * hx;
+    m.at(0, 1) = U.x * hy; m.at(1, 1) = U.y * hy; m.at(2, 1) = U.z * hy;
+    m.at(0, 2) = R.x * cx + U.x * cy + F.x * n; m.at(1, 2) = R.y * cx + U.y * cy + F.y * n; m.at(2, 2) = R.z * cx + U.z * cy + F.z * n;
+    m.at(0, 3) = g_curEyePos.x; m.at(1, 3) = g_curEyePos.y; m.at(2, 3) = g_curEyePos.z; m.at(3, 3) = 1;
+    *out = m;
+    s_hxQuads++;
     return true;
 }
 

@@ -103,17 +103,33 @@ During loading RawCam_v2 renders 640x360 into 'Source Input Texture'.
   (oscillating head yaw on a still headset) with DLSS: sharp, no doubling. Game TAA path not re-tested (PPv2 TAA
   via game_aa = taa made no projection calls; the game's own TAA option is to be checked by the user).
 
-## Open (after 1.0.0): HxVolumetricCamera shows a bright fog rectangle at some spots
-- User report (2026-11-25, Ex.: a meadow with blue grass and a stone platform): a bright, foggy rectangle in the
-  middle of the view, the same region in both eyes (world-consistent depth, characters in front, only the distant
-  background fogged). Debug > Switch off effect: HxVolumetricCamera makes it vanish. Log: 90 fps, no errors;
-  HxVolumetricCamera enabled there (with GlobalFog, Enviro sky/post-processing).
-- HxVolumetricCamera (Hx Volumetric Lighting): temporal (TemporalSampling, TemporalTexture, LastMatrixVP /
-  LastMatrixVPInv, MatrixVP), own view/projection fields (CurrentView/Proj/Invers + *2 for single-pass stereo,
-  IsRenderBoth), MyPreCull(cam), static CameraPlanes, ProjectorShader / OrthoProjectorMesh. Suspects: a frustum or
-  projector built from the game's field of view (covers only a central rectangle of the wider eye view) and/or the
-  temporal history shared by both eye renders.
-- User decision: no block toggle; do a real fix on the test PC (needs a save at that spot; debug_head_sway helps).
+## HxVolumetricCamera fog rectangle - FIXED in 1.0.1 (2026-11-25, tests 033-037)
+- User report: a bright, foggy rectangle in the middle of the view at some spots (blue-grass meadow with a stone
+  platform), the same region in both eyes. Debug > Switch off effect: HxVolumetricCamera made it vanish.
+- Cause: HxVolumetricCamera.BuildBuffer (tail-called from its OnPreCull, so it runs for every eye render) builds the
+  world matrix of a full-screen quad (CreateQuad: vertices (+-1, +-1, 1)) on the camera's near plane:
+    static BlitMatrix @0x188 = TRS(cam.transform.position, cam.transform.rotation,
+                                   (tan(fov/2)*n*aspect, tan(fov/2)*n, n)),   n = nearClipPlane + eps
+  and BlitMatrixMVP = MatrixVP x BlitMatrix, BlitMatrixMV = MatrixV x BlitMatrix (MatrixVP/MatrixV come from the
+  real per-eye camera matrices). Built from the GAME camera's transform and symmetric field of view, the quad covered
+  only a central, world-fixed rectangle of each (wider, head-tracked) eye view.
+- Fix (src/main.cpp InstallHxQuadFix + stereo::HxBlitMatrix): MinHook on the Matrix4x4::TRS_Injected icall; only the
+  call whose return address is GameAssembly+0x52e75e (the "call rax" at +0x52e75c in BuildBuffer, bytes checked at
+  start; any other game version -> fix off with a warning) is replaced during an eye render:
+    M = eyePose x [[hx,0,cx,0],[0,hy,cy,0],[0,0,n,0],[0,0,0,1]],  hx/hy = half extents, cx/cy = off-centre of the
+    eye frustum at distance n (from the eye's FOV tangents).
+  Option `volumetrics_eye_quad` (default 1; menu Display > Fix volumetric light). Log: "volumetrics: eye quads N".
+- Test 037 at the user's spot (Save0 loaded through the autosave slot, backed up and restored): fix on = haze over the
+  whole eye view; off = the rectangle (as v1.0). ~1180 eye quads / 10 s (one per eye per frame).
+- Not checked: its temporal sampling (TemporalTexture / LastMatrixVP*) with real head motion - user to look for
+  ghosting of the light shafts while turning the head.
+- Test PC workflow changed (2026-11-25): shared agent, commands go to D:\vrconversions\sharedtools\agent\inbox\
+  edgeofeternity__NNN_name.cmd.ps1, results in edgeofeternity\agent\outbox. Machine lock serialises projects; Steam
+  offline; every command closes the game and removes the mod files from the game folder (try/finally); never touch
+  the SteamVR null driver. The game continues from steam\userdata\191768928\269190\remote\AutoSaveEOEGameAutoSave;
+  the user's test save is Save0 (copy it over the autosave for a run, restore the backup afterwards).
+
+## Release 1.0.1 (2026-11-25): 1.0.0 + the volumetrics rectangle fix (stage build 13)
 
 ## Release 1.0.0 (2026-10-29)
 - Version 1.0.0 = build 12 + version string. Code and notes on GitHub: https://github.com/mark-mon/edge-of-eternity-vr

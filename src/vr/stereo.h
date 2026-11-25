@@ -19,6 +19,7 @@ bool OnSetProjection(il2cpp::Object* cam, const il2cpp::Matrix4x4* m);
 bool OnResetProjection(il2cpp::Object* cam);
 bool OnSetView(il2cpp::Object* cam, const il2cpp::Matrix4x4* m);
 bool OnResetView(il2cpp::Object* cam);
+bool HxBlitMatrix(const float scale[3], il2cpp::Matrix4x4* out);
 bool DlssProjectionExtents(il2cpp::Object* cam, float jx, float jy, float out[4]);
 void OnCameraPostRender(il2cpp::Object* cam);
 // The game's DLSS is (re)creating its buffers: with dlss_in_vr = 1 the sizes are replaced by per-eye sizes.

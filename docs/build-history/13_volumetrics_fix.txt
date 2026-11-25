@@ -1,0 +1,10 @@
+Edge of Eternity VR - stage build 13 / release 1.0.1: volumetric light rectangle fixed
+(2026-11-25, test 037 at the user's save) - CURRENT
+
+Install: copy version.dll next to EdgeOfEternity.exe. Your config.txt can stay (a missing volumetrics_eye_quad means on).
+
+- Fixed: at some places a bright, foggy rectangle covered the middle of the view (the game's volumetric light / haze,
+  HxVolumetricCamera). The effect drew its haze on a quad sized for the flat game's camera; the mod now gives it each
+  eye's own view, so the haze covers the whole view and the light shafts stay.
+  Settings menu > Display > "Fix volumetric light" (default on; config.txt volumetrics_eye_quad = 1).
+- Please look at: the light shafts / haze while turning your head (any lag or doubling of the haze?).

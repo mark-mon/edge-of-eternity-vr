@@ -58,6 +58,9 @@ static const char kDefaultConfig[] =
     "# Block Dancing Shadows: 1 = the game's screen-space contact shadows (NGSS frustum shadows) are switched off; they\n"
     "# sway with head motion in VR. 0 = the game's look (slightly richer, but distant shadows dance)\n"
     "block_dancing_shadows = 1\n"
+    "# 1 = the game's volumetric light / haze (HxVolumetricCamera) is drawn over each eye's full view; 0 = as in the\n"
+    "# flat game (shows as a bright rectangle at some places in VR)\n"
+    "volumetrics_eye_quad = 1\n"
     "# Ring radii (1.0 = half the image width): full rate inside foveation_inner, lowest rate outside foveation_outer\n"
     "foveation_inner = 0.40\n"
     "foveation_outer = 0.70\n"
@@ -262,6 +265,33 @@ template <class F> static bool HookIcall(F& slot, void* detour, const char* what
     return true;
 }
 
+// Matrix4x4.TRS icall, replaced only for the one call in HxVolumetricCamera.BuildBuffer that builds its near-plane
+// quad (return address checked; see stereo::HxBlitMatrix). Any other TRS call goes straight through.
+typedef void (*Trs_t)(const float* pos, const float* rot, const float* scale, il2cpp::Matrix4x4* out);
+static Trs_t o_Trs = nullptr;
+static void* g_hxTrsRet = nullptr;
+static void h_Trs(const float* pos, const float* rot, const float* scale, il2cpp::Matrix4x4* out) {
+    if (g_vr && __builtin_return_address(0) == g_hxTrsRet && stereo::HxBlitMatrix(scale, out)) return;
+    o_Trs(pos, rot, scale, out);
+}
+static void InstallHxQuadFix() {
+    // GameAssembly+0x52e75c: "call rax" (FF D0) of the TRS icall in HxVolumetricCamera.BuildBuffer (game build of 2026)
+    const unsigned char* site = (const unsigned char*)il2cpp::gameAssembly + 0x52e75c;
+    const unsigned char* lea = (const unsigned char*)il2cpp::gameAssembly + 0x52e72c;
+    if (site[0] != 0xFF || site[1] != 0xD0 || lea[0] != 0x48 || lea[1] != 0x8D || lea[2] != 0x0D) {
+        LOGW("volumetrics: HxVolumetricCamera call site not found (different game version) - quad fix off");
+        return;
+    }
+    void* trs = il2cpp::api.resolve_icall(
+        "UnityEngine.Matrix4x4::TRS_Injected(UnityEngine.Vector3&,UnityEngine.Quaternion&,UnityEngine.Vector3&,UnityEngine.Matrix4x4&)");
+    if (!trs || MH_CreateHook(trs, (void*)h_Trs, (void**)&o_Trs) != MH_OK || MH_EnableHook(trs) != MH_OK) {
+        LOGE("volumetrics: hook Matrix4x4.TRS failed");
+        return;
+    }
+    g_hxTrsRet = (void*)(site + 2);
+    LOGI("volumetrics: HxVolumetricCamera near-plane quad per eye (TRS icall hooked at %p)", trs);
+}
+
 typedef float* (*DlssExtents_t)(float* ret, il2cpp::Object* cam, float jx, float jy, const il2cpp::MethodInfo* mi);
 static DlssExtents_t o_DlssExtents = nullptr;
 static float* h_DlssExtents(float* ret, il2cpp::Object* cam, float jx, float jy, const il2cpp::MethodInfo* mi) {
@@ -311,6 +341,7 @@ static DWORD WINAPI InitThread(void*) {
         HookIcall(unity::I.Camera_ResetProjectionMatrix, (void*)h_icResetProj, "Camera.ResetProjectionMatrix");
         HookIcall(unity::I.Camera_set_worldToCameraMatrix, (void*)h_icSetView, "Camera.set_worldToCameraMatrix_Injected");
         HookIcall(unity::I.Camera_ResetWorldToCameraMatrix, (void*)h_icResetView, "Camera.ResetWorldToCameraMatrix");
+        InstallHxQuadFix();
     }   // also when desktop_view = game: it can be switched in the menu
     if (g_vr && unity::M.Camera_FireOnPostRender)
         HookMethod(unity::M.Camera_FireOnPostRender, (void*)h_FireOnPostRender, (void**)&o_FireOnPostRender, "Camera.FireOnPostRender");

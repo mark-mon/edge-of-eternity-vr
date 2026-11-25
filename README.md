@@ -14,7 +14,7 @@ A native OpenXR VR mod for **Edge of Eternity** (Steam, Unity 2021.3 IL2CPP, Dir
   - **Eye tracked:** the full-detail area follows your gaze, on headsets that expose eye tracking through OpenXR.
 - **Desktop mirror:** the monitor shows the left eye. The game's own flat render is skipped, which saves GPU time.
 
-Version **1.0.0**.
+Version **1.0.1**.
 
 ## DLSS, FSR and TAA are disabled in VR. Use foveated rendering instead
 
@@ -61,7 +61,7 @@ After updating the mod, delete `config.txt` to get the new defaults and comments
 | Page | Options |
 |---|---|
 | **View** | Head tracking, world scale, level horizon, recenter |
-| **Display** | Resolution preset (70 / 85 / 100 / 120 / 140 % of the headset's recommended size, or custom), anti-aliasing, monitor view, **foveated rendering** (off / fixed / eye; strength; inner and outer ring size), **Block Dancing Shadows**, grass in both eyes, frame pacing |
+| **Display** | Resolution preset (70 / 85 / 100 / 120 / 140 % of the headset's recommended size, or custom), anti-aliasing, monitor view, **foveated rendering** (off / fixed / eye; strength; inner and outer ring size), **Block Dancing Shadows**, **Fix volumetric light**, grass in both eyes, frame pacing |
 | **HUD** | HUD distance / size / height / follow head, game menu panel distance / width, game menus on the menu panel, clean HUD edges |
 | **Debug** | Performance log, fake eye gaze, switch off a single camera effect (for tracking down effects that misbehave in VR), image dumps |
 
@@ -70,6 +70,15 @@ All settings are also in `config.txt`, with comments.
 ### Block Dancing Shadows
 
 This option is on by default. The game's screen-space contact shadows (NGSS frustum shadows) make distant shadows on rocks and vegetation sway when you move your head, so the mod keeps them off. Turning the option off restores the game's slightly richer look, along with the dancing shadows.
+
+### Fix volumetric light
+
+This option is on by default. The game's volumetric light and haze effect draws its haze on a panel sized for the flat game's view. In VR that showed as a bright, foggy rectangle in the middle of the view at some places. The mod now draws it over each eye's full view. Turning the option off gives the game's own version.
+
+## Changes
+
+- **1.0.1:** fixed the bright fog rectangle that the game's volumetric light showed at some places.
+- **1.0.0:** first release.
 
 ## Troubleshooting
 
